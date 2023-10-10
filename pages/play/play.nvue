@@ -1,0 +1,523 @@
+<template>
+	<view class="flex-col">
+		<view class="header flex-col">
+			<view class="" style="height: 60rpx;background-color: #000;">
+				
+			</view>
+			<view class="" style="">
+				<myVideoPlayer
+					ref="myVideo"
+					:videoTitle="videoTile"
+					:videoList="videoList"
+					v-model="currentJuJi"
+				></myVideoPlayer>
+			</view>
+		</view>
+		
+		<view class="center flex-col">
+			<view class="">
+				<scroll-view
+					class="tabMain flex-col"
+					:show-scrollbar="false" 
+					:scroll-x="true" 
+					:scroll-into-view="tabScrollInto">
+					<view
+						class="tabContent flex-col"
+						style="width: 750rpx;background-color: #fff;border-bottom: 1px solid #e7e7e7;">
+						<view class="flex-row">
+							<view class="tabItem flex-row" 
+								v-for="(tab, tabItemIndex) in myclass" 
+								:id="'tabb' + tabItemIndex" 
+								:data-id="tabItemIndex"
+								@click="pressScrollViewItem(tabItemIndex)"
+								style=""
+								>
+								<view class="flex-row" style="padding: 0 20rpx;height: 70rpx;">
+									<text
+										class="tabItemTitle"
+										:class="tabIndex==tabItemIndex ? 'tabItemTitleActive' : ''"
+										style="line-height: 70rpx;">
+										{{tab.name}}
+									</text>
+									<text
+										v-if="tab.tip"
+										:class="tabIndex==tabItemIndex ? 'tabItemTitleActive' : ''"
+										style="font-size: 11px;line-height: 70rpx;padding-left: 3rpx;">
+										{{tab.tip}}
+									</text>
+								</view>
+							</view>
+						</view>
+						
+						<view class="tabLineView flex-row">
+							<view class="tabLine tabLineActive"
+								:style="{
+									left: `${tabItemLineLeft}px`,
+									width: `${tabItemLineWidth}px`,
+								}"
+							>
+							</view>
+						</view>
+					</view>
+				</scroll-view>
+				
+				<swiper
+					class="childPageView"
+					:current="tabIndex"
+					@change="swiperChange"
+					:style="{height: swiperHeight +'rpx'}">
+					<swiper-item class="childPageViewItem flex-col" v-for="(page,childPageViewItemIndex) in myclass" :key="childPageViewItemIndex">
+						<scroll-view
+							class="flex-col"
+							style="padding: 30rpx 20rpx;"
+							:scroll-y="true"
+							scroll-with-animation
+							:style="{height: swiperHeight +'rpx'}"
+							lower-threshold="300">
+							<view class="flex-col" v-if="childPageViewItemIndex==0">
+								
+								<!-- 资料 -->
+								<view class="" @tap="ifShowDetail=true">
+									<view class="">
+										<text style="font-weight: 600;font-size: 18px;">{{videoInfo['vod_name']}}</text>
+									</view>
+									<view class="flex-row justify-between" style="margin-top: 15rpx;">
+										<view class="flex-row" style="width: 600rpx;">
+											<text class="line_1" style="font-size: 12px;">
+												{{videoInfo['vod_class']}} 
+												{{videoInfo['vod_area']}} 
+												{{videoInfo['vod_year']}}
+											</text>
+										</view>
+										<view class="flex-row">
+											<text style="font-size: 12px;">详情</text>
+											<u-icon name="arrow-right" size="14"></u-icon>
+										</view>
+									</view>
+								</view>
+								
+								<!-- 线路 -->
+								<view class="">
+									<view class="flex-row justify-between" style="margin-top: 30rpx;">
+										<view class="">
+											<text style="font-size: 14px;">视频源</text>
+										</view>
+									</view>
+									<view class="" style="margin-top: 15rpx;">
+										<scroll-view 
+											class="flex-row"
+											:scroll-x="true"
+											scroll-with-animation
+											:show-scrollbar="false">
+											<view v-for="(vod,index) in videoListAll" @tap="chooseVideoSource(index)">
+												<view class="" :style="{border: currentVideoSource==index ? '1px solid #FB7299' : '1px solid #fff'}" style="margin: 0 5rpx;padding: 10rpx 20rpx;background-color: #f0f1f3;">
+													<view style="">
+														<text :style="{color: currentVideoSource==index ? '#FB7299' : '#000'}" style="font-size: 12px;text-align: center;">{{vod['player_info']['show']}}</text>
+													</view>
+												</view>
+											</view>
+										</scroll-view>
+									</view>
+								</view>
+								
+								<!-- 选集 -->
+								<view class="">
+									<view class="flex-row justify-between" style="margin-top: 30rpx;" @tap="ifShowAllJuJi=true">
+										<view class="">
+											<text style="font-size: 14px;">选集</text>
+										</view>
+										<view class="flex-row">
+											<text style="font-size: 12px;">{{videoInfo['vod_remarks']}}</text>
+											<u-icon name="arrow-right" size="14"></u-icon>
+										</view>
+									</view>
+									<view class="" style="margin-top: 15rpx;">
+										<scroll-view 
+											class="flex-row"
+											:scroll-x="true"
+											scroll-with-animation
+											:scroll-into-view="'tabjuji'+currentJuJi"
+											:show-scrollbar="false">
+											<view v-for="(vod,index) in videoList" :id="'tabjuji'+index" @tap="chooseJuJi(index)">
+												<view class="" style="margin: 0 10rpx;padding: 30rpx 60rpx;border-radius: 10rpx;background-color: #f0f1f3;">
+													<view style="width: 200rpx;">
+														<text :style="{color: currentJuJi==index ? '#FB7299' : '#000'}" style="font-size: 14px;text-align: center;">{{vod['name']}}</text>
+													</view>
+												</view>
+											</view>
+										</scroll-view>
+									</view>
+								</view>
+							</view>
+							
+							<view class="flex-col" v-if="childPageViewItemIndex==1">
+								<text style="font-weight: 600;font-size: 16px;">评论区</text>
+								<text style="font-size: 12px;margin-top: 15rpx;">敬请期待</text>
+							</view>
+						</scroll-view>
+					</swiper-item>
+				</swiper>
+			</view>
+		</view>
+		
+		<view class="bottom">
+			
+			<!-- 视频详情 -->
+			<view class="">
+				<u-action-sheet
+					title="详情"
+					@close="ifShowDetail = false"
+					:show="ifShowDetail"
+					safeAreaInsetBottom>
+					<scroll-view :scroll-y="true" :style="{height: swiperHeight+'rpx'}">
+						<view class="flex-col" style="padding: 20rpx;">
+							<view class="flex-row" style="">
+								<view class="flex-col">
+									<img :src="videoInfo['vod_pic']" style="width: 200rpx;height: 280rpx;border-radius: 10rpx;" alt="">
+								</view>
+								<view class="flex-col justify-between" style="margin-left: 20rpx;">
+									<view class="flex-row">
+										<text class="line_1" style="font-size: 16px;font-weight: 600;">{{videoInfo['vod_name'] ?? '未知'}}</text>
+									</view>
+									<view class="flex-row" style="">
+										<view class="flex-col">
+											<text style="font-size: 13px;">{{videoInfo['vod_area']}} {{videoInfo['vod_year']}}</text>
+											<text style="font-size: 13px;">{{videoInfo['vod_weekday']}}</text>
+										</view>
+										<view class="flex-row" style="margin-left: 140rpx;">
+											<text style="color: #f19e38;font-size: 30px;font-weight: 800;">{{videoInfo['vod_douban_score'] ?? '暂无评分'}}</text>
+										</view>
+									</view>
+								</view>
+							</view>
+							
+							<view class="flex-col" style="margin-top: 20rpx;">
+								<view class="flex-row" style="margin-top: 10rpx;">
+									<text style="color: gray;font-size: 13px;">别名 </text>
+									<text class="line_1" style="color: gray;font-size: 13px;">{{videoInfo['vod_tag'] ?? videoInfo['vod_name']}}</text>
+								</view>
+								<view class="flex-row">
+									<text style="color: gray;font-size: 13px;">风格 </text>
+									<text class="line_1" style="color: gray;font-size: 13px;">{{videoInfo['vod_class']}}</text>
+								</view>
+							</view>
+							<view class="flex-col" style="margin-top: 20rpx;">
+								<text style="font-size: 16px;font-weight: 600;">演职人员</text>
+								<text style="color: gray;font-size: 14px;margin-top: 10rpx;">{{videoInfo['vod_actor']}}</text>
+							</view>
+							<view class="flex-col" style="margin-top: 20rpx;">
+								<text style="font-size: 16px;font-weight: 600;">制作信息</text>
+								<text style="color: gray;font-size: 13px;margin-top: 10rpx;">导演：{{videoInfo['vod_director'] ?? '未知'}}</text>
+								<text style="color: gray;font-size: 13px;">编剧：{{videoInfo['vod_writer'] ?? '未知'}}</text>
+							</view>
+							<view class="flex-col" style="margin-top: 20rpx;">
+								<text style="font-size: 16px;font-weight: 600;">简介</text>
+								<text style="color: gray;font-size: 13px;margin-top: 10rpx;">{{videoInfo['vod_content'] ?? '未知'}}</text>
+							</view>
+						</view>
+					</scroll-view>
+				</u-action-sheet>
+			</view>
+			
+			<!-- 剧集 -->
+			<view class="">
+				<u-action-sheet
+					title="选集"
+					@close="ifShowAllJuJi = false"
+					:show="ifShowAllJuJi"
+					safeAreaInsetBottom>
+					<view class="" :style="{height: swiperHeight+'rpx'}">
+						<view class="" style="padding: 15rpx;">
+							<scroll-view 
+								class="flex-row"
+								:scroll-x="true"
+								scroll-with-animation
+								:show-scrollbar="false">
+								<view v-for="(vod,index) in videoListAll" @tap="chooseVideoSource(index)">
+									<view class="" :style="{border: currentVideoSource==index ? '1px solid #FB7299' : '1px solid #fff'}" style="margin: 0 5rpx;padding: 10rpx 20rpx;background-color: #f0f1f3;">
+										<view style="">
+											<text :style="{color: currentVideoSource==index ? '#FB7299' : '#000'}" style="font-size: 12px;text-align: center;">{{vod['player_info']['show']}}</text>
+										</view>
+									</view>
+								</view>
+							</scroll-view>
+						</view>
+						<scroll-view
+							class="flex-col"
+							scroll-with-animation
+							:scroll-y="true"
+							:scroll-into-view="'tabjujiy'+currentJuJi"
+							:show-scrollbar="false">
+							<view class="flex-row flex-wrap" style="padding: 20rpx 35rpx;">
+								<view v-for="(vod, index) in videoList"
+									:id="'tabjujiy'+index"
+									@tap="chooseJuJi(index)">
+									<view class="" style="margin: 10rpx;padding: 30rpx 60rpx;border-radius: 10rpx;background-color: #f0f1f3;">
+										<view style="width: 200rpx;">
+											<text :style="{color: currentJuJi==index ? '#FB7299' : '#000'}" style="font-size: 14px;text-align: center;">{{vod['name']}}</text>
+										</view>
+									</view>
+								</view>
+							</view>
+						</scroll-view>
+					</view>
+				</u-action-sheet>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				vod_id: 0,
+				ifShowAllJuJi: false,// 是否展示全部剧集
+				ifShowDetail: false,// 是否展示详情内容
+				currentVideoSource: 0,
+				currentJuJi: 0,
+				videoTile: '观影愉快',
+				vod_play_list: [],
+				videoInfo: {},
+				videoListAll: [],
+				videoList: [],
+				tabIndex: 0,
+				tabScrollInto:'',
+				tabItemLineLeft: 0,
+				tabItemLineWidth: 24,
+				windowHeight:0,
+				windowWidth:0,
+				tabListSize:[],
+				swiperHeight: 0,
+				myclass: [
+					{
+						name: '简介'
+					},
+					{
+						name: '评论',
+						tip: '1.7亿'
+					}
+				]
+			};
+		},
+		onLoad(option) {
+			this.vod_id = option.id
+			if (option['xl'] && option['xl']!='') {
+				this.currentVideoSource = option['xl']
+			}
+			if (option['juji'] && option['juji']!='') {
+				this.currentJuJi = option['juji']
+			}
+			let system = uni.getSystemInfoSync();
+			this.windowHeight = system.windowHeight;
+			this.windowWidth = system.windowWidth;
+			var rpx = this.windowWidth / 750;
+			this.swiperHeight = this.windowHeight / rpx - 610;
+			this.jcsetTabItemDistance()
+			this.getVideoInfo()
+		},
+		onShow() {
+			if (this.$refs.myVideo) {
+				this.$refs.myVideo.videoPlay()
+			}
+		},
+		methods: {
+			// 设置历史播放
+			sethistory() {
+				uni.getStorage({
+					key:'history',
+					success:res=>{
+						var hisarr = res.data;
+						for(var i = 0;i < hisarr.length;i++) {
+							if (hisarr[i].vod_id == this.vod_id) {
+								hisarr.splice(i, 1);
+								break;
+							}
+						}
+						var history = {
+							'vod_id': this.vod_id,
+							'vod_pic': this.videoInfo['vod_pic'],
+							'vod_name': this.videoInfo['vod_name'],
+							'juji_name': this.videoList[this.currentJuJi]['name'] ?? '无',// 剧集名称
+							'juji_index': this.currentJuJi,// 剧集序号
+							'xl_index': this.currentVideoSource,// 线路序号
+						}
+						hisarr.unshift(history);
+						uni.setStorage({
+							key:'history',
+							data:hisarr
+						})
+					},
+					fail:err=>{
+						var hisarr = [];
+						var history = {
+							'vod_id': this.vod_id,
+							'vod_pic': this.videoInfo['vod_pic'],
+							'vod_name': this.videoInfo['vod_name'],
+							'juji_name': this.videoList[this.currentJuJi]['name'] ?? '无',// 剧集名称
+							'juji_index': this.currentJuJi,// 剧集序号
+							'xl_index': this.currentVideoSource,// 线路序号
+						}
+						hisarr.unshift(history);
+						uni.setStorage({
+							key:'history',
+							data:hisarr
+						})
+					}
+				})
+			},
+			// 选择视频源
+			chooseVideoSource(index) {
+				if (this.videoListAll && this.videoListAll[index]) {
+					this.currentVideoSource = index
+					this.videoList = this.videoListAll[index]['urls']
+				}
+			},
+			// 选集
+			chooseJuJi(index) {
+				if (this.videoList && this.videoList[index]) {
+					if (this.currentJuJi == index) {
+						this.currentJuJi = null
+					} else {
+						this.currentJuJi = index
+					}
+					this.ifShowAllJuJi = false
+					this.sethistory()
+				}
+			},
+			// 返回上一页
+			goBack() {
+				uni.navigateBack()
+			},
+			getVideoInfo() {
+				uni.$u.http.get('addons/appto/app.php/index/page_player?id='+this.vod_id).then(res => {
+					if (res.data['code'] == 1) {
+						this.videoInfo = res.data['data']
+						this.videoListAll = this.videoInfo['vod_play_list']
+						this.videoList = this.videoInfo['vod_play_list'][0]['urls']
+						this.sethistory()
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: '影片信息获取失败'
+						})
+					}
+				}).catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: '影片信息获取失败'
+					})
+				})
+			},
+			swiperChange(e) {
+				let index = e.detail.current
+				this.setTabSelect(index)
+				this.setTabItemLinePosition(this.tabListSize[this.tabIndex].left, this.tabListSize[this.tabIndex].width);
+			},
+			pressScrollViewItem(index) {
+				this.setTabSelect(index);
+			},
+			jcsetTabItemDistance() {
+				var queryTabSize = uni.createSelectorQuery().in(this);
+				var timer = setInterval(res=>{
+					queryTabSize.select('#tabb' + (this.myclass.length-1)).boundingClientRect(data => {
+						if (data) {
+							clearInterval(timer);
+							this.setTabItemDistance()
+						}
+					}).exec()
+				}, 100)
+			},
+			setTabItemDistance() {
+				var queryTabSize = uni.createSelectorQuery().in(this);
+				for (var i = 0; i < this.myclass.length; i++) {
+					queryTabSize.select('#tabb' + [i]).boundingClientRect()
+				}
+				queryTabSize.exec(rects => {
+					rects.forEach((rect) => {
+						this.tabListSize[rect.dataset.id] = rect
+					})
+					this.setTabItemLinePosition(this.tabListSize[this.tabIndex].left, this.tabListSize[this.tabIndex].width);
+				});
+			},
+			setTabItemLinePosition(left, width) {
+				this.tabItemLineLeft = left + width/2 - 12
+			},
+			setTabSelect(index) {
+				this.tabScrollInto = 'tabb' + index;
+				this.tabIndex = index;
+			},
+		}
+	}
+</script>
+
+<style lang="scss" scoped>
+	
+	.tabMain {
+		width: 750rpx;
+		display: flex;
+		flex-direction: row;
+		white-space: nowrap;
+	}
+	.tab {
+		width: 750rpx;
+		display: flex;
+		flex-direction: row;
+		white-space: nowrap;
+	}
+	
+	/* 隐藏滚动条 */
+	
+	.tab ::-webkit-scrollbar {
+		display: none;
+		width: 0 !important;
+		height: 0 !important;
+		-webkit-appearance: none;
+		background: transparent;
+	}
+	
+	.tabLineView {
+		position: relative;
+		height: 2px;
+	}
+	
+	.tabLine {
+		position: absolute;
+		height: 2px;
+		top: 0;
+		bottom: 0;
+		width: 0;
+		background-color: #FB7299;
+	}
+	
+	.tabLineActive {
+		transition-duration: 0.2s;
+		transition-property: left;
+	}
+	
+	.childPageView {
+		display: flex;
+		flex-direction: column;
+	}
+	
+	.tabItemTitle {
+		color: #505050;
+		font-size: 14px;
+		height: 50rpx;
+		line-height: 50rpx;
+		display: flex;
+		flex-wrap: nowrap;
+		align-items: center;
+		justify-content: center;
+	}
+	
+	.tabItemTitleActive {
+		color: #FB7299;
+	}
+	
+	.childPageViewItem {
+		flex: 1;
+		flex-direction: column;
+		margin-top: 10rpx;
+	}
+</style>
